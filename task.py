@@ -33,7 +33,6 @@ def upsampl(seq,fb,fs,duration):
     seq = np.repeat(seq,spc)
     return seq[:N]
 
-
 # ДК для L1OCp
 # из ИКД L1
 reg1_strat = [0,0,0,0,1,1,0,0,0,1,0,1]
