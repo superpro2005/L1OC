@@ -118,7 +118,7 @@ def pltSPEC(signal, fs):
 def pltACF(signal, fs):
     corr_full = np.correlate(signal, signal, mode='full')
     corr = corr_full[len(signal)-1:]
-    lags = np.arange(len(corr)) / fs * 1000.0  # ms
+    lags = np.arange(len(corr)) / fs * 1000.0
 
     corr = corr / (np.max(np.abs(corr)) + 1e-12)
 
