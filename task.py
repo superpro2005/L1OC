@@ -42,15 +42,15 @@ def make_mp(N,fs,f_mp=2.046e6):
 
 
 def PVU(data_chips, pilot_chips):
-    # Обрезаем до минимальной длины и чередуем
     min_len = min(len(data_chips), len(pilot_chips))
     result = np.empty(min_len * 2)
-    result[0::2] = data_chips[:min_len]   # четные позиции
-    result[1::2] = pilot_chips[:min_len]  # нечетные позиции
+    result[0::2] = data_chips[:min_len]
+    result[1::2] = pilot_chips[:min_len]
     return result
+
 CHEEPS = int(Fs*DURATION)
 print(CHEEPS)
-# ДК для L1OCp
+
 reg_strat_p = [0,0,0,0,1,1,0,0,0,1,0,1]
 reg_p = [0,0,1,1,1,0]  #14 в двоичной системе
 
