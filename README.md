@@ -1,10 +1,14 @@
 **Программа моделирует радионавигационный сигнал L1OC системы ГЛОНАСС на промежуточной частоте для НКА №14.**
 Спектр сигнала изображен на рисунке 1, корреляционная функция на рисунке 2.
 
-<img width="991" height="507" alt="image" src="https://github.com/user-attachments/assets/07a1a5c5-a593-4df6-8a74-5dfe777c75e9" />
+<img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/07a1a5c5-a593-4df6-8a74-5dfe777c75e9" />
+
 Рисунок 1 - спектр сигнала L1OC
-<img width="959" height="485" alt="image" src="https://github.com/user-attachments/assets/b3443ecb-40bb-4aa4-9f5f-8a27ff1d13dc" />
+
+<img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/b3443ecb-40bb-4aa4-9f5f-8a27ff1d13dc" />
+
 Рисунок 2 - корреляционная функция сигнала L1OC
+
 
 Результат программы вывод первых и последних 32битов для L1OCd и L1OCp для того чтобы можно было сравнить с ИКД. 
 
@@ -15,6 +19,7 @@ L1OCp: Первые 32 символа: D278122B,
        Последние 32 символа: DDBF2062
 ```
 Согласно ИКД
+
 L1OCp:
   Первые 32 символа: `632614CE`
   Последние 32 символа: `4E6C847D`
