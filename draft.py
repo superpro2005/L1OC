@@ -108,9 +108,9 @@ def pltSPEC(signal, fs):
 
     plt.figure(figsize=(8, 4))
     plt.plot(freq_shifted / 1e6, spectrum_db)
-    plt.title('Energy Spectrum (dB)')
-    plt.xlabel('Frequency (MHz)')
-    plt.ylabel('Magnitude (dB)')
+    plt.title('Спектр сигнала')
+    plt.xlabel('Частота (MHz)')
+    plt.ylabel('Амплитуда (dB)')
     plt.grid(True)
     plt.xlim(-2.5, 2.5)
     plt.tight_layout()
@@ -118,15 +118,15 @@ def pltSPEC(signal, fs):
 def pltACF(signal, fs):
     corr_full = np.correlate(signal, signal, mode='full')
     corr = corr_full[len(signal)-1:]
-    lags = np.arange(len(corr)) / fs * 1000.0
+    time = np.arange(len(corr)) / fs * 1000.0
 
     corr = corr / (np.max(np.abs(corr)) + 1e-12)
 
     plt.figure(figsize=(6, 4))
-    plt.plot(lags, corr)
-    plt.title('Autocorrelation Function (normalized)')
-    plt.xlabel('Lag (ms)')
-    plt.ylabel('Normalized Correlation')
+    plt.plot(time, corr)
+    plt.title('АКФ')
+    plt.xlabel('время (ms)')
+    plt.ylabel('Значение корреляции')
     plt.grid(True)
     plt.xlim(0, 10)
     plt.tight_layout()

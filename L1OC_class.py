@@ -1,14 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-class L1OCSimulator:
+class L1OC_sim:
     def __init__(self, Fb=1.023e6, Fs=None, duration=0.020, amplitude=1, IF=None,
                  LENGTH_P=4092, LENGTH_D=1023, OC_RATE=250.0, CC_RATE=250.0):
         self.Fb = Fb
-        self.Fs = Fs or 4*Fb
+        self.Fs =4*Fb
         self.DURATION = duration
         self.AMPLITUDE = amplitude
-        self.IF = IF or self.Fs/4
+        self.IF = Fb
         self.LENGTH_P = LENGTH_P
         self.LENGTH_D = LENGTH_D
         self.OC_RATE = OC_RATE
@@ -50,7 +50,7 @@ class L1OCSimulator:
 
     def generate_sequences(self):
         reg_strat_p = [0,0,0,0,1,1,0,0,0,1,0,1]
-        reg_p = [0,0,1,1,1,0]
+        reg_p = [0,0,1,1,1,0] # HKA 14 остальное дополняем 0
         seq_start_p = self.lfsr_sequence([6,8,11,12], reg_strat_p, self.LENGTH_P)
         seq_p = self.lfsr_sequence([1,6], reg_p, self.LENGTH_P)
         xor_seq_p = seq_start_p ^ seq_p
@@ -58,7 +58,7 @@ class L1OCSimulator:
         chips_p = np.tile(xor_seq_p, repeat_p)[:self.CHEEPS]
 
         reg_start_d = [0,0,1,1,0,0,1,0,0,0]
-        reg_d = [0,0,0,0,0,0,1,1,1,0]
+        reg_d = [0,0,0,0,0,0,1,1,1,0] # HKA 14 остальное дополняем 0
         seq_start_d = self.lfsr_sequence([7,10], reg_start_d, self.LENGTH_D)
         seq_d = self.lfsr_sequence([3,7,9,10], reg_d, self.LENGTH_D)
         xor_seq_d = seq_start_d ^ seq_d
@@ -89,32 +89,40 @@ class L1OCSimulator:
         self.chips_d = chips_d
         self.chips_p = chips_p
 
-    def pltSPEC(self, signal):
+    def pltSPEC(self,signal):
         N_fft = 2 ** int(np.ceil(np.log2(len(signal))))
         spectrum = np.fft.fft(signal, n=N_fft)
-        freq = np.fft.fftfreq(N_fft, 1/self.Fs)
-        spectrum_db = 20.0*np.log10(np.abs(spectrum)+1e-12)
-        plt.figure(figsize=(8,4))
-        plt.plot(freq/1e6, spectrum_db)
-        plt.title('Energy Spectrum (dB)')
-        plt.xlabel('Frequency (MHz)')
-        plt.ylabel('Magnitude (dB)')
+        spectrum_shifted = np.fft.fftshift(spectrum)
+        freq = np.fft.fftfreq(N_fft, 1 / self.Fs)
+        freq_shifted = np.fft.fftshift(freq)
+
+        spectrum_db = 20.0 * np.log10(np.abs(spectrum_shifted) + 1e-12)
+
+        plt.figure(figsize=(8, 4))
+        plt.plot(freq_shifted / 1e6, spectrum_db)
+        plt.title('Спектр сигнала')
+        plt.xlabel('Частота (MHz)')
+        plt.ylabel('Амплитуда (dB)')
         plt.grid(True)
         plt.xlim(-2.5, 2.5)
+        plt.ylim(0,100)
         plt.tight_layout()
 
-    def pltACF(self, signal):
+    def pltACF(self,signal):
         corr_full = np.correlate(signal, signal, mode='full')
-        corr = corr_full[len(signal)-1:]
-        lags = np.arange(len(corr))/self.Fs*1000.0
-        corr = corr/(np.max(np.abs(corr))+1e-12)
-        plt.figure(figsize=(6,4))
-        plt.plot(lags, corr)
-        plt.title('Autocorrelation Function (normalized)')
-        plt.xlabel('Lag (ms)')
-        plt.ylabel('Normalized Correlation')
+        corr = corr_full[len(signal) - 1:]
+        time = np.arange(len(corr)) / self.Fs * 1000.0
+
+        corr = corr / (np.max(np.abs(corr)) + 1e-12)
+
+        plt.figure(figsize=(6, 4))
+        plt.plot(time, corr)
+        plt.title('АКФ')
+        plt.xlabel('время (ms)')
+        plt.ylabel('Значение корреляции')
         plt.grid(True)
-        plt.xlim(0,10)
+        plt.xlim(0,20)
+        plt.ylim(0,1)
         plt.tight_layout()
 
     def print_hex_edges(self, bits, name="seq"):
@@ -123,12 +131,12 @@ class L1OCSimulator:
         l = b[-32:]
         f_hex = hex(int("".join(map(str, f)), 2))[2:].upper().zfill(8)
         l_hex = hex(int("".join(map(str, l)), 2))[2:].upper().zfill(8)
-        print(f"{name}: first={f_hex}, last={l_hex}")
+        print(f"{name}: Первые 32бита: {f_hex}, Последние 32 бита: {l_hex}")
 
-sim = L1OCSimulator()
-sim.generate_sequences()
-sim.print_hex_edges(sim.chips_d, "L1OCd")
-sim.print_hex_edges(sim.chips_p, "L1OCp")
-sim.pltSPEC(sim.if_signal)
-sim.pltACF(sim.if_signal)
+L1OC = L1OC_sim()
+L1OC.generate_sequences()
+L1OC.print_hex_edges(L1OC.chips_d, "L1OCd")
+L1OC.print_hex_edges(L1OC.chips_p, "L1OCp")
+L1OC.pltSPEC(L1OC.if_signal)
+L1OC.pltACF(L1OC.if_signal)
 plt.show()
