@@ -113,7 +113,7 @@ class L1OC_sim:
         corr = corr_full[len(signal) - 1:]
         time = np.arange(len(corr)) / self.Fs * 1000.0
 
-        corr = corr / (np.max(np.abs(corr)) + 1e-12)
+        corr = corr / (np.max(corr))
 
         plt.figure(figsize=(6, 4))
         plt.plot(time, corr)
@@ -121,8 +121,8 @@ class L1OC_sim:
         plt.xlabel('время (ms)')
         plt.ylabel('Значение корреляции')
         plt.grid(True)
-        plt.xlim(0,20)
-        plt.ylim(0,1)
+        plt.xlim(-.1,10)
+        plt.ylim(0,1.2)
         plt.tight_layout()
 
     def print_hex_edges(self, bits, name="seq"):
@@ -131,7 +131,7 @@ class L1OC_sim:
         l = b[-32:]
         f_hex = hex(int("".join(map(str, f)), 2))[2:].upper().zfill(8)
         l_hex = hex(int("".join(map(str, l)), 2))[2:].upper().zfill(8)
-        print(f"{name}: Первые 32бита: {f_hex}, Последние 32 бита: {l_hex}")
+        print(f"{name}: Первые 32 символа: {f_hex}, Последние 32 символа: {l_hex}")
 
 L1OC = L1OC_sim()
 L1OC.generate_sequences()
