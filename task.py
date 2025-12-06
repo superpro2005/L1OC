@@ -1,9 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import random as rand
-import numpy.fft as fft
 
-Fb = 1.023e6
+
+Fb = 2*1.023e6
 Fs = 4*Fb
 DURATION  = 0.020
 AMPLITUDE = 1
@@ -47,6 +46,53 @@ def PVU(data_chips, pilot_chips):
     result[0::2] = data_chips[:min_len]
     result[1::2] = pilot_chips[:min_len]
     return result
+
+
+def pltSPEC(signal, fs):
+    N_fft = 2 ** int(np.ceil(np.log2(len(signal))))
+    spectrum = np.fft.fft(signal, n=N_fft)
+    spectrum_shifted = np.fft.fftshift(spectrum)
+    freq = np.fft.fftfreq(N_fft, 1 / fs)
+    freq_shifted = np.fft.fftshift(freq)
+
+    spectrum_db = 20.0 * np.log10(np.abs(spectrum_shifted) + 1e-12)
+
+    plt.figure(figsize=(8, 4))
+    plt.plot(freq_shifted / 1e6, spectrum_db)
+    plt.title('Energy Spectrum (dB)')
+    plt.xlabel('Frequency (MHz)')
+    plt.ylabel('Magnitude (dB)')
+    plt.grid(True)
+    plt.ylim(0,120)
+    plt.xlim(0, 5)
+    plt.tight_layout()
+
+def pltACF(signal, fs):
+    corr_full = np.correlate(signal, signal, mode='full')
+    corr = corr_full[len(signal)-1:]
+    lags = np.arange(len(corr)) / fs * 1000.0
+
+    corr = corr / (np.max(np.abs(corr)) + 1e-12)
+
+    plt.figure(figsize=(6, 4))
+    plt.plot(lags, corr)
+    plt.title('Autocorrelation Function (normalized)')
+    plt.xlabel('Lag (ms)')
+    plt.ylabel('Normalized Correlation')
+    plt.grid(True)
+    plt.xlim(0, 10)
+    plt.tight_layout()
+
+
+def print_hex_edges(bits, name="seq"):
+    b = np.array(bits).astype(int)
+    f = b[:32]
+    l = b[-32:]
+
+    f_hex = hex(int("".join(map(str, f)), 2))
+    l_hex = hex(int("".join(map(str, l)), 2))
+
+    print(f"{name}: first={f_hex}, last={l_hex}")
 
 CHEEPS = int(Fs*DURATION)
 print(CHEEPS)
@@ -95,53 +141,6 @@ PVU_L1OC = PVU(L1OCd,L1OCp)
 carrier=np.cos(2*np.pi*IF*t[:len(PVU_L1OC)])
 min_len = min(len(PVU_L1OC), len(carrier))
 if_signal = AMPLITUDE*PVU_L1OC[:min_len]*carrier[:min_len]
-
-
-def pltSPEC(signal, fs):
-    N_fft = 2 ** int(np.ceil(np.log2(len(signal))))
-    spectrum = np.fft.fft(signal, n=N_fft)
-    spectrum_shifted = np.fft.fftshift(spectrum)
-    freq = np.fft.fftfreq(N_fft, 1 / fs)
-    freq_shifted = np.fft.fftshift(freq)
-
-    spectrum_db = 20.0 * np.log10(np.abs(spectrum_shifted) + 1e-12)
-
-    plt.figure(figsize=(8, 4))
-    plt.plot(freq_shifted / 1e6, spectrum_db)
-    plt.title('Energy Spectrum (dB)')
-    plt.xlabel('Frequency (MHz)')
-    plt.ylabel('Magnitude (dB)')
-    plt.grid(True)
-    plt.xlim(-2.5, 2.5)
-    plt.tight_layout()
-
-def pltACF(signal, fs):
-    corr_full = np.correlate(signal, signal, mode='full')
-    corr = corr_full[len(signal)-1:]
-    lags = np.arange(len(corr)) / fs * 1000.0
-
-    corr = corr / (np.max(np.abs(corr)) + 1e-12)
-
-    plt.figure(figsize=(6, 4))
-    plt.plot(lags, corr)
-    plt.title('Autocorrelation Function (normalized)')
-    plt.xlabel('Lag (ms)')
-    plt.ylabel('Normalized Correlation')
-    plt.grid(True)
-    plt.xlim(0, 10)
-    plt.tight_layout()
-
-
-def print_hex_edges(bits, name="seq"):
-    b = np.array(bits).astype(int)
-    f = b[:32]
-    l = b[-32:]
-
-    f_hex = hex(int("".join(map(str, f)), 2))[2:].upper().zfill(8)
-    l_hex = hex(int("".join(map(str, l)), 2))[2:].upper().zfill(8)
-
-    print(f"{name}: first={f_hex}, last={l_hex}")
-
 
 print_hex_edges(chips_d, "L1OCd")
 print_hex_edges(chips_p, "L1OCp")
